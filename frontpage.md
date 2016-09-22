@@ -52,21 +52,23 @@ http://www.oracle.com/technetwork/database/enterprise-edition/downloads/
 
 #### Dependencias
 
-    curl -o ora_bootstrap.sh https://descarga.lexsys.net/ora_bootstrap.sh
+
+    yum groupinstall -y "X Window System"
+    curl -LO https://descarga.lexsys.net/ora_bootstrap.sh
     chmod +x ora_bootstrap.sh
     ./ora_bootstrap.sh
 
 
 #### Ajuste de parámetros
 
-/etc/
+/etc/grub2.cfg
 
     kernel /vmlinuz-2.6.32-300.25.1.el6uek.x86_64 ro root=LABEL=/ transparent_hugepage=never
 
 
 ##### Parámetros del Kernel
 
-/etc/sysctl.conf
+vim /etc/sysctl.d/10-oracle.conf
 
     fs.aio-max-nr = 1048576
     fs.file-max = 6815744
@@ -85,12 +87,21 @@ http://www.oracle.com/technetwork/database/enterprise-edition/downloads/
 
 /etc/security/limits.conf
 
-    nofile  soft  1024
-    nofile  hard  65536
-    nproc   soft  2047
-    nproc   hard  16384
-    stack   soft  10240
-    stack   hard  32768
+
+    oracle   soft   nofile  1024
+    oracle   hard   nofile  65536
+    oracle   soft   nproc   2047
+    oracle   hard   nproc   16384
+    oracle   soft   stack   10240
+    oracle   hard   stack   32768
+
+
+/etc/pma.d/login
+
+
+    session   required  pam_limits.so
+
+
 #### Directorios y usario oracle
 
     groupadd -g 54321 oinstall
@@ -100,12 +111,18 @@ http://www.oracle.com/technetwork/database/enterprise-edition/downloads/
     groupadd -g 54327 asmdba
     groupadd -g 54328 asmoper
     groupadd -g 54329 asmadmin
-    useradd -u 54321 -g oinstall \  
+    useradd -u 54321 -g oinstall \
         -G dba,oper,asmdba,dgdba,asmoper,asmadmin oracle
     passwd oracle
     mkdir -p /u01/app/oracle
     chown -R oracle:oinstall /u01/app
     chmod -R 775 /u01/app
+
+#### Scheduler
+
+    #TODO check if godaddy supports this, it is for RAC only I believe
+    echo deadline > /sys/block/${ASM_DISK}/queue/scheduler
+
 
 
 #### Variables de Entorno
@@ -117,6 +134,22 @@ http://www.oracle.com/technetwork/database/enterprise-edition/downloads/
 
 
 ### Instalación Oracle Database
+
+
+    xhost +
+    ssh -X oracle@<db.host.url>
+
+    unzip linuxamd64_12102_database_se2_2of2.zip
+    cd database
+    ./runInstaller
+
+
+
+Como root
+
+
+    /u01/app/oraInventori/oraInstall.sh
+    /u01/app/oracle/app/product/12.1/db_home1/root.sh
 
 
 
