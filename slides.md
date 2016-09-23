@@ -2,7 +2,8 @@
 
 ## Instalación básica para LexSys
 
-Sistema de Automatización de Procesos para la Administración de Justicia
+Sistema de Automatización de Procesos
+para la Administración de Justicia
 
 ernesto@tic.uno
 
@@ -36,9 +37,12 @@ ernesto@tic.uno
 * CentOS 5, 6 y 7
 
 
+
 #### Descarga de Software
 
 http://www.oracle.com/technetwork/database/enterprise-edition/downloads/
+
+Requiere registro en el sitio de Oracle Technology Network
 
 
 
@@ -52,23 +56,23 @@ http://www.oracle.com/technetwork/database/enterprise-edition/downloads/
 
 #### Dependencias
 
-
     yum groupinstall -y "X Window System"
-    curl -LO https://descarga.lexsys.net/ora_bootstrap.sh
+    curl -LO \
+      https://github.com/ecelis/acedia/releases/download/v1.0rc1/bootstrap.sh
     chmod +x ora_bootstrap.sh
     ./ora_bootstrap.sh
 
 
 #### Ajuste de parámetros
 
-/etc/grub2.cfg
+**/etc/grub2.cfg**
 
     kernel /vmlinuz-2.6.32-300.25.1.el6uek.x86_64 ro root=LABEL=/ transparent_hugepage=never
 
 
 ##### Parámetros del Kernel
 
-vim /etc/sysctl.d/10-oracle.conf
+**/etc/sysctl.d/10-oracle.conf**
 
     fs.aio-max-nr = 1048576
     fs.file-max = 6815744
@@ -85,8 +89,7 @@ vim /etc/sysctl.d/10-oracle.conf
 
 ##### Límite de Recursos del Sistema Operativo
 
-/etc/security/limits.conf
-
+**/etc/security/limits.conf**
 
     oracle   soft   nofile  1024
     oracle   hard   nofile  65536
@@ -96,8 +99,7 @@ vim /etc/sysctl.d/10-oracle.conf
     oracle   hard   stack   32768
 
 
-/etc/pma.d/login
-
+**/etc/pam.d/login**
 
     session   required  pam_limits.so
 
@@ -120,9 +122,10 @@ vim /etc/sysctl.d/10-oracle.conf
 
 #### Scheduler
 
-    #TODO check if godaddy supports this, it is for RAC only I believe
     echo deadline > /sys/block/${ASM_DISK}/queue/scheduler
 
+**${ASM\_DISK}** es el dispositivo de bloques que alberga el directorio
+**$ORACLE\_BASE**
 
 
 #### Variables de Entorno
@@ -135,18 +138,66 @@ vim /etc/sysctl.d/10-oracle.conf
 
 ### Instalación Oracle Database
 
+Desde una computadora remota:
 
     xhost +
-    ssh -X oracle@<db.host.url>
+    ssh -X oracle@db.host.url
 
+En el servidor de Oracle vía SSH
+
+    unzip linuxamd64_12102_database_se2_1of2.zip
     unzip linuxamd64_12102_database_se2_2of2.zip
     cd database
     ./runInstaller
 
 
+#### Configuración de actualizaciones de seguridad
 
-Como root
+![Paso 1](img/01.png)
 
+
+#### Opciones de Instalación
+
+![Paso 2](img/02.png)
+Instala solo la base de datos
+
+
+![Paso 3](img/03.png)
+Selecciona el tipo de instalación, **Single Instance**
+
+
+![Paso 4](img/04.png)
+Selecciona el idioma
+
+
+![Paso 5](img/05.png)
+Selecciona la edición según la licencia de Oracle que tengas
+
+
+![Paso 6](img/06.png)
+Revisa las rutas de instalación, **$ORACLE\_BASE** y **$ORACLE\_HOME**
+
+
+![Paso 7](img/07.png)
+Ruta del inventario de productos instalados
+
+
+![Paso 8](img/08.png)
+Grupos del sistema operativo, membresia en estos grupos otorga
+privilegios al usuario SYS de oracle, **OSDBA** otorga privilegios de
+**SYSDBA**
+
+
+![Paso 1](img/10.png)
+Verifica que los requisitos pasen la prueba y arregla los que fallen
+
+
+![Paso 1](img/11.png)
+Sumario de la instalación, clic en **Install**
+
+
+Al finalizar la instalación es necesario ejecutar los siguientes
+comandos como usuario root
 
     /u01/app/oraInventori/oraInstall.sh
     /u01/app/oracle/app/product/12.1/db_home1/root.sh
