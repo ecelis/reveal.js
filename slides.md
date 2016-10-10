@@ -2,12 +2,6 @@
 
 ## Instalación básica para LexSys
 
-Sistema de Automatización de Procesos
-para la Administración de Justicia
-
-ernesto@tic.uno
-
-
 
 ### Programa
 
@@ -57,8 +51,8 @@ Requiere registro en el sitio de Oracle Technology Network
 #### Dependencias
 
     yum groupinstall -y "X Window System"
-    curl -LO \
-      https://github.com/ecelis/acedia/releases/download/v1.0rc1/bootstrap.sh
+    curl -o ora_bootstrap.sh \
+      https://gist.githubusercontent.com/ecelis/0b8fa0fddd4d28c59bffbe6620fa461d/raw/8217cfe6bdd5aa3996853dc40e587ba33ff7dcdf/ora_bootstrap.sh
     chmod +x ora_bootstrap.sh
     ./ora_bootstrap.sh
 
@@ -205,6 +199,34 @@ comandos como usuario root
 
 
 ### Esquema y Tablespace
+
+    CREATE TABLESPACE <LEXUSR>_DAT DATAFILE '<LEXUSR>_DAT.DBF' SIZE 2000M
+      AUTOEXTEND ON NEXT 1000M MAXSIZE UNLIMITED LOGGING
+      EXTENT MANAGEMENT LOCAL AUTOALLOCATE BLOCKSIZE 8K
+      SEGMENT SPACE MANAGEMENT AUTO FLASHBACK ON;
+
+Crea el tablespace para los datos, sustituye **LEXUSR** de acuerdo a tu ambiente.
+
+
+Crea el tablespace para los índices, sustituye **LEXUSR** de acuerdo a tu ambiente.
+
+    CREATE TABLESPACE <LEXUSR>_INX DATAFILE '<LEXUSR>_INX.DBF' SIZE 1000M
+      AUTOEXTEND ON NEXT 500M MAXSIZE UNLIMITED LOGGING
+      EXTENT MANAGEMENT LOCAL AUTOALLOCATE BLOCKSIZE 8K
+      SEGMENT SPACE MANAGEMENT AUTO FLASHBACK ON;
+
+
+Crea el usuario (schema) de Oracle y otorga los permisos necesarios
+
+      CREATE USER <DBUSER> IDENTIFIED BY <DBPASS> DEFAULT TABLESPACE LEXSYS_DAT
+        QUOTA UNLIMITED ON <LEXUSR>_DAT;
+      GRANT CONNECT TO <DBUSER>;
+      GRANT RESOURCE TO <DBUSER>;
+      ALTER USER <DBUSER> QUOTA UNLIMITED ON <LEXUSR>_INX;
+
+No olvides _hacer commit_ para que los cambios en Oracle apliquen
+
+      COMMIT;
 
 
 
